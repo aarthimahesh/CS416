@@ -38,12 +38,29 @@
             text-anchor: middle;
             fill: #666;
         }
+        .button {
+            display: block;
+            width: 250px;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <h1>Cereal</h1>
     <svg id="cerealChart"></svg>
     <div class="tooltip" id="tooltip"></div>
+    <button class="button" onclick="window.location.href='manufacturers.html'">Are certain manufacturers healthier than others?</button>
 
     <script>
         // Set dimensions and margins for the chart
