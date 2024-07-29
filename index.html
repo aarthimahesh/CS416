@@ -28,6 +28,16 @@
             pointer-events: none;
             opacity: 0;
         }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+        .subtext {
+            font-size: 16px;
+            text-anchor: middle;
+            fill: #666;
+        }
     </style>
 </head>
 <body>
@@ -37,7 +47,7 @@
 
     <script>
         // Set dimensions and margins for the chart
-        const margin = { top: 30, right: 20, bottom: 100, left: 60 },
+        const margin = { top: 70, right: 20, bottom: 100, left: 60 },
               width = 1200 - margin.left - margin.right,
               height = 500 - margin.top - margin.bottom;
 
@@ -107,6 +117,20 @@
                           .duration(500)
                           .style("opacity", 0);
                });
+
+            // Add title
+            svg.append("text")
+               .attr("class", "title")
+               .attr("x", width / 2)
+               .attr("y", -margin.top / 2)
+               .text("How healthy is your cereal?");
+
+            // Add subtext
+            svg.append("text")
+               .attr("class", "subtext")
+               .attr("x", width / 2)
+               .attr("y", -margin.top / 2 + 30)
+               .text("Is cereal actually good for you? Below you can find your favorite cereals with their corresponding protein level. Hover over each bar to see more nutrition information");
         }).catch(error => {
             console.error("Error loading or parsing data:", error);
         });
