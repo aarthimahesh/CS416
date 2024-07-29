@@ -53,16 +53,114 @@
 </head>
 <body>
     <h1>Are certain manufacturers healthier than others?</h1>
-    <select id="manufacturerSelect">
-        <!-- Options will be added dynamically -->
-    </select>
     <svg id="mfrChart"></svg>
     <div class="tooltip" id="tooltip"></div>
     <button class="button" onclick="window.location.href='value.html'">What do you value in cereal?</button>
     <button class="button" onclick="window.location.href='index.html'">Back to Cereal Chart</button>
 
     <script>
-        // Existing code for manufacturers chart
+        // Set dimensions and margins for the chart
+        const margin = { top: 70, right: 20, bottom: 100, left: 60 },
+              width = 1200 - margin.left - margin.right,
+              height = 500 - margin.top - margin.bottom;
+
+        // Create an SVG container
+        const svg = d3.select("#mfrChart")
+                      .attr("width", width + margin.left + margin.right)
+                      .attr("height", height + margin.top + margin.bottom)
+                      .append("g")
+                      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Create a tooltip div
+        const tooltip = d3.select("#tooltip");
+
+        // Load and process the CSV data
+        d3.csv("cereal.csv").then(data => {
+            // Convert columns to numbers
+            data.forEach(d => {
+                d.protein = +d.protein;
+                d.mfr = d.mfr; // Keep the manufacturer column as is
+            });
+
+            // Mapping for manufacturer full names
+            const mfrNames = {
+                "A": "American Home Food Products",
+                "G": "General Mills",
+                "K": "Kelloggs",
+                "N": "Nabisco",
+                "P": "Post",
+                "Q": "Quaker Oats",
+                "R": "Ralston Purina"
+            };
+
+            // Group data by manufacturer and calculate average protein
+            const mfrProtein = d3.rollup(data, v => d3.mean(v, d => d.protein), d => d.mfr);
+            const mfrArray = Array.from(mfrProtein, ([key, value]) => ({ mfr: mfrNames[key], protein: value }));
+
+            // Set up the scales
+            const xScale = d3.scaleBand()
+                             .domain(mfrArray.map(d => d.mfr))
+                             .range([0, width])
+                             .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                             .domain([0, d3.max(mfrArray, d => d.protein)])
+                             .nice()
+                             .range([height, 0]);
+
+            // Add X axis
+            svg.append("g")
+               .attr("transform", `translate(0,${height})`)
+               .call(d3.axisBottom(xScale))
+               .selectAll("text")
+               .attr("transform", "rotate(-45)")
+               .style("text-anchor", "end");
+
+            // Add Y axis
+            svg.append("g")
+               .call(d3.axisLeft(yScale));
+
+            // Add bars
+            svg.selectAll(".bar")
+               .data(mfrArray)
+               .enter()
+               .append("rect")
+               .attr("class", "bar")
+               .attr("x", d => xScale(d.mfr))
+               .attr("y", d => yScale(d.protein))
+               .attr("width", xScale.bandwidth())
+               .attr("height", d => height - yScale(d.protein))
+               .attr("fill", "steelblue")
+               .on("mouseover", function(event, d) {
+                   tooltip.transition()
+                          .duration(200)
+                          .style("opacity", .9);
+                   tooltip.html(`Manufacturer: ${d.mfr}<br>Protein: ${d.protein}`)
+                          .style("left", (event.pageX + 5) + "px")
+                          .style("top", (event.pageY - 28) + "px");
+               })
+               .on("mouseout", function() {
+                   tooltip.transition()
+                          .duration(500)
+                          .style("opacity", 0);
+               });
+
+            // Add title
+            svg.append("text")
+               .attr("class", "title")
+               .attr("x", width / 2)
+               .attr("y", -margin.top / 2)
+               .text("Average Protein Content by Manufacturer");
+
+            // Add subtext
+            svg.append("text")
+               .attr("class", "subtext")
+               .attr("x", width / 2)
+               .attr("y", -margin.top / 2 + 30)
+               .text("This chart shows the average protein content for each manufacturer.");
+        }).catch(error => {
+            console.error("Error loading or parsing data:", error);
+        });
     </script>
 </body>
 </html>
