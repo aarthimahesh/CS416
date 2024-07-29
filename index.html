@@ -1,10 +1,82 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Cereal</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        svg {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
 </head>
 <body>
-    
+    <h1>Cereal</h1>
+    <svg id="cerealChart"></svg>
+
+    <script>
+        // Set dimensions and margins for the chart
+        const margin = { top: 30, right: 20, bottom: 40, left: 60 },
+              width = 800 - margin.left - margin.right,
+              height = 500 - margin.top - margin.bottom;
+
+        // Create an SVG container
+        const svg = d3.select("#cerealChart")
+                      .attr("width", width + margin.left + margin.right)
+                      .attr("height", height + margin.top + margin.bottom)
+                      .append("g")
+                      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Load and process the CSV data
+        d3.csv("cereal.csv").then(data => {
+            // Convert the protein column to numbers
+            data.forEach(d => {
+                d.protein = +d.protein;
+            });
+
+            // Set up the scales
+            const xScale = d3.scaleBand()
+                             .domain(data.map(d => d.name))
+                             .range([0, width])
+                             .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                             .domain([0, d3.max(data, d => d.protein)])
+                             .nice()
+                             .range([height, 0]);
+
+            // Add X axis
+            svg.append("g")
+               .attr("transform", `translate(0,${height})`)
+               .call(d3.axisBottom(xScale))
+               .selectAll("text")
+               .attr("transform", "rotate(-45)")
+               .style("text-anchor", "end");
+
+            // Add Y axis
+            svg.append("g")
+               .call(d3.axisLeft(yScale));
+
+            // Add bars
+            svg.selectAll(".bar")
+               .data(data)
+               .enter()
+               .append("rect")
+               .attr("class", "bar")
+               .attr("x", d => xScale(d.name))
+               .attr("y", d => yScale(d.protein))
+               .attr("width", xScale.bandwidth())
+               .attr("height", d => height - yScale(d.protein))
+               .attr("fill", "steelblue");
+        }).catch(error => {
+            console.error("Error loading or parsing data:", error);
+        });
+    </script>
 </body>
 </html>
