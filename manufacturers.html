@@ -78,11 +78,23 @@
         // Create a tooltip div
         const tooltip = d3.select("#tooltip");
 
+        // Define manufacturer name mapping
+        const mfrNames = {
+            'A': 'American Home Food Products',
+            'G': 'General Mills',
+            'K': 'Kelloggs',
+            'N': 'Nabisco',
+            'P': 'Post',
+            'Q': 'Quaker Oats',
+            'R': 'Ralston Purina'
+        };
+
         // Load and process the CSV data
         d3.csv("cereal.csv").then(data => {
-            // Convert columns to numbers
+            // Convert columns to numbers and map manufacturer names
             data.forEach(d => {
                 d.protein = +d.protein;
+                d.mfr = mfrNames[d.mfr];
             });
 
             // Aggregate data by manufacturer
