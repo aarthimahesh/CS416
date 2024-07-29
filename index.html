@@ -17,16 +17,28 @@
         .axis text {
             font-size: 12px;
         }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 5px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border-radius: 3px;
+            pointer-events: none;
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
     <h1>Cereal</h1>
     <svg id="cerealChart"></svg>
+    <div class="tooltip" id="tooltip"></div>
 
     <script>
         // Set dimensions and margins for the chart
-        const margin = { top: 30, right: 20, bottom: 100, left: 60 }, // Increased bottom margin
-              width = 1200 - margin.left - margin.right,  // Increased width
+        const margin = { top: 30, right: 20, bottom: 100, left: 60 },
+              width = 1200 - margin.left - margin.right,
               height = 500 - margin.top - margin.bottom;
 
         // Create an SVG container
@@ -36,11 +48,16 @@
                       .append("g")
                       .attr("transform", `translate(${margin.left},${margin.top})`);
 
+        // Create a tooltip div
+        const tooltip = d3.select("#tooltip");
+
         // Load and process the CSV data
         d3.csv("cereal.csv").then(data => {
-            // Convert the protein column to numbers
+            // Convert columns to numbers
             data.forEach(d => {
                 d.protein = +d.protein;
+                d.fat = +d.fat;
+                d.calories = +d.calories;
             });
 
             // Set up the scales
@@ -76,7 +93,20 @@
                .attr("y", d => yScale(d.protein))
                .attr("width", xScale.bandwidth())
                .attr("height", d => height - yScale(d.protein))
-               .attr("fill", "steelblue");
+               .attr("fill", "steelblue")
+               .on("mouseover", function(event, d) {
+                   tooltip.transition()
+                          .duration(200)
+                          .style("opacity", .9);
+                   tooltip.html(`Name: ${d.name}<br>Protein: ${d.protein}g<br>Fat: ${d.fat}g<br>Calories: ${d.calories}`)
+                          .style("left", (event.pageX + 5) + "px")
+                          .style("top", (event.pageY - 28) + "px");
+               })
+               .on("mouseout", function() {
+                   tooltip.transition()
+                          .duration(500)
+                          .style("opacity", 0);
+               });
         }).catch(error => {
             console.error("Error loading or parsing data:", error);
         });
